@@ -1,0 +1,131 @@
+#root {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  background-color: #1a1b26;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding: 20px;
+}
+
+.login-form {
+  background: #24283b;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow:
+          0 4px 6px rgba(0, 0, 0, 0.4),
+          inset 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.login-form h2 {
+  margin-bottom: 30px;
+  color: #a9b1d6;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.login-form input[type="text"],
+.login-form input[type="password"] {
+  width: 100%;
+  padding: 18px 16px;
+  margin-bottom: 20px;
+  background-color: #2f3549;
+  color: #e0e0e0;
+  border: 1px solid #3b4261;
+  border-radius: 10px;
+  box-sizing: border-box;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.login-form input::placeholder {
+  /* Gris azulado más suave */
+  color: #8c92a8;
+  opacity: 1;
+  font-weight: 300;
+}
+
+.login-form input[type="text"]:focus,
+.login-form input[type="password"]:focus {
+  background-color: #3b4261;
+  outline: none;
+  border-color: #7aa2f7;
+  box-shadow: 0 0 0 3px rgba(122, 162, 247, 0.3);
+}
+
+.login-form button[type="submit"] {
+  background-color: #7aa2f7;
+  color: #1a1b26;
+  padding: 16px 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 700;
+  width: 100%;
+  margin-top: 30px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 10px rgba(122, 162, 247, 0.4);
+  transition: all 0.3s ease;
+}
+
+.login-form button[type="submit"]:hover {
+  background-color: #6a95e2;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(122, 162, 247, 0.6);
+}
+
+.login-form .error {
+  color: #ff9eaf;
+  margin-top: 15px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.welcome {
+  background: #24283b;
+  padding: 50px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  text-align: center;
+  max-width: 500px;
+}
+
+.welcome h2 {
+  color: #ff9eaf;
+  margin-bottom: 15px;
+  font-size: 36px;
+  font-weight: 800;
+}
+
+.welcome p {
+  color: #a9b1d6;
+  margin-bottom: 30px;
+  font-size: 18px;
+}
+
+.welcome button {
+  background-color: #5d6787;
+  color: #ffffff;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.welcome button:hover {
+  background-color: #727c9a;
+}
