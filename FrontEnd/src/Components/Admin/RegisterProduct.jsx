@@ -1,8 +1,13 @@
 import { useState, useEffect } from "react";
 
-export default function RegisterProduct() {
+const API_BASE_URL = "http://localhost:8080/api";
 
-    // --- ESTADOS DEL FORMULARIO ---
+export default function ProductList() {
+
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [message, setMessage] = useState(null);
+
     const [form, setForm] = useState({
         name: "",
         description: "",
@@ -10,152 +15,217 @@ export default function RegisterProduct() {
         active: true
     });
 
-    const [message, setMessage] = useState(""); // Mensajes de éxito/error
-    const [categories, setCategories] = useState([]); // Lista de categorías
-    const [loadingCategories, setLoadingCategories] = useState(true); // Estado de carga
-    const [categoryError, setCategoryError] = useState(null); // Error al cargar categorías
+    const [categories, setCategories] = useState([]);
 
-    // --- FUNCION PARA CARGAR CATEGORÍAS DESDE LA API ---
     useEffect(() => {
-        const fetchCategories = async () => {
-            setLoadingCategories(true);
-            setCategoryError(null);
-            try {
-                const API_URL = "http://localhost:8080/api/categories";
-                const res = await fetch(API_URL);
-
-                if (!res.ok) {
-                    throw new Error(`Error HTTP: ${res.status}. Verifica tu servidor.`);
-                }
-
-                const data = await res.json();
-
-                if (Array.isArray(data)) {
-                    setCategories(data);
-                } else {
-                    throw new Error("Formato de datos incorrecto.");
-                }
-
-            } catch (error) {
-                console.error("Error al cargar categorías:", error);
-                setCategoryError(`No se pudieron cargar las categorías: ${error.message}`);
-            } finally {
-                setLoadingCategories(false);
-            }
-        };
-
-        fetchCategories();
+        loadProducts();
+        loadCategories();
     }, []);
 
-    // --- MANEJADOR DE CAMBIOS EN INPUTS ---
-    const handleChange = (e) => {
-        const { name, value, type, checked } = e.target;
-        setForm({
-            ...form,
-            [name]: type === "checkbox" ? checked : value
-        });
+    const loadProducts = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch(`${API_BASE_URL}/products`);
+            const data = await res.json();
+            setProducts(data);
+        } catch {
+            setMessage("❌ Error al cargar productos");
+        } finally {
+            setLoading(false);
+        }
     };
 
-    // --- MANEJADOR DE ENVÍO DEL FORMULARIO ---
+    const loadCategories = async () => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/categories`);
+            const data = await res.json();
+            setCategories(data);
+        } catch {
+            setMessage("❌ Error al cargar categorías");
+        }
+    };
+
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+
+        setForm(prev => ({
+            ...prev,
+            [name]: type === "checkbox" ? checked : value
+        }));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setMessage("");
+        setMessage(null);
 
         if (!form.category_id) {
-            setMessage("Por favor, selecciona una categoría.");
+            setMessage("🔴 Selecciona una categoría");
             return;
         }
 
         try {
-            const res = await fetch("http://localhost:8080/api/products", {
+            const res = await fetch(`${API_BASE_URL}/products`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(form)
+                body: JSON.stringify({
+                    ...form,
+                    category_id: Number(form.category_id)
+                })
             });
 
-            // Si la respuesta no es OK
+            const data = await res.json();
+
             if (!res.ok) {
-                let errorMessage = "Error al registrar producto";
-                try {
-                    const errorData = await res.json();
-                    errorMessage = errorData.message || errorMessage;
-                } catch {
-                }
-                throw new Error(errorMessage);
+                setMessage("❌ " + data.message);
+                return;
             }
 
-            const data = await res.json();
-            setMessage(`✅ Producto registrado correctamente: ${data.name}`);
+            setMessage(`✅ Producto '${form.name}' registrado`);
             setForm({ name: "", description: "", category_id: "", active: true });
+            loadProducts();
 
-        } catch (error) {
-            setMessage(`❌ Error al registrar producto: ${error.message || 'Intente de nuevo.'}`);
+        } catch (e) {
+            setMessage("❌ Error al registrar");
+        }
+    };
+
+    const deleteProduct = async (id) => {
+        if (!window.confirm("¿Seguro que deseas eliminar este producto?")) return;
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/products/${id}`, {
+                method: "DELETE"
+            });
+
+            if (!res.ok) throw new Error();
+
+            setMessage("✅ Producto eliminado");
+            loadProducts();
+
+        } catch {
+            setMessage("❌ No se pudo eliminar");
         }
     };
 
     return (
-        <div style={{ padding: "20px" }}>
-            <h1>Registrar Producto</h1>
-            <form onSubmit={handleSubmit}>
+        <div style={{ padding: "20px", background: "#222", color: "white" }}>
+
+            <h1>Control de Productosa</h1>
+
+            {message && <p>{message}</p>}
+
+            <h2>Registrar Producto</h2>
+
+            <form
+                onSubmit={handleSubmit}
+                style={{
+                    display: "grid",
+                    gap: "10px",
+                    background: "#333",
+                    padding: "15px",
+                    borderRadius: "5px",
+                    maxWidth: "400px",
+                    marginBottom: "30px"
+                }}
+            >
                 <input
                     name="name"
+                    placeholder="Nombre"
                     value={form.name}
                     onChange={handleChange}
-                    placeholder="Nombre del Producto"
                     required
                 />
+
                 <textarea
                     name="description"
+                    placeholder="Descripción"
                     value={form.description}
                     onChange={handleChange}
-                    placeholder="Descripción del Producto"
                     required
                 />
 
-                {loadingCategories ? (
-                    <p>Cargando categorías...</p>
-                ) : categoryError ? (
-                    <p style={{ color: 'red', fontWeight: 'bold' }}>{categoryError}</p>
-                ) : categories.length === 0 ? (
-                    <p>No hay categorías disponibles.</p>
-                ) : (
-                    <select
-                        name="category_id"
-                        value={form.category_id}
-                        onChange={handleChange}
-                        required
-                    >
-                        <option value="" disabled>Selecciona una Categoría</option>
-                        {categories.map((category) => (
-                            <option key={category.id} value={category.id}>
-                                {category.name}
-                            </option>
-                        ))}
-                    </select>
-                )}
+                <select
+                    name="category_id"
+                    value={form.category_id}
+                    onChange={handleChange}
+                    required
+                >
+                    <option value="">-- Categoría --</option>
+                    {categories.map(c => (
+                        <option key={c.id} value={c.id}>
+                            {c.name}
+                        </option>
+                    ))}
+                </select>
 
-                <label style={{ display: 'block', margin: '10px 0' }}>
-                    Activo:
+                <label>
                     <input
                         type="checkbox"
                         name="active"
                         checked={form.active}
                         onChange={handleChange}
-                        style={{ marginLeft: '10px' }}
                     />
+                    Activo
                 </label>
 
                 <button
                     type="submit"
-                    disabled={loadingCategories || categoryError || categories.length === 0}
+                    style={{
+                        padding: "10px",
+                        background: "#4da3ff",
+                        border: "none",
+                        color: "white",
+                        cursor: "pointer"
+                    }}
                 >
-                    Registrar Producto
+                    Registrar
                 </button>
             </form>
 
-            {message && <p style={{ marginTop: '15px', fontWeight: 'bold' }}>{message}</p>}
+            <h2>Lista de Productos</h2>
 
-            <a href="/admin" style={{ display: 'block', marginTop: '20px' }}>Volver al panel</a>
+            {loading && <p>Cargando...</p>}
+
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                <tr style={{ background: "#333" }}>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th>Activo</th>
+                    <th>Acción</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {products.map(p => (
+                    <tr key={p.id}>
+                        <td>{p.id}</td>
+                        <td>{p.name}</td>
+                        <td>{p.category_id}</td>
+                        <td>{p.active ? "✅" : "❌"}</td>
+                        <td>
+                            <button
+                                onClick={() => deleteProduct(p.id)}
+                                style={{
+                                    color: "red",
+                                    background: "transparent",
+                                    border: "none",
+                                    cursor: "pointer"
+                                }}
+                            >
+                                Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                ))}
+                </tbody>
+            </table>
+
+            <a href="/admin" style={{ color: "#4da3ff", display: "block", marginTop: "20px" }}>
+                Volver al panel
+            </a>
+
         </div>
     );
 }

@@ -8,6 +8,7 @@ import AdminDashboard from "./Components/Admin/AdminDashboard.jsx";
 import EmployeesDashboard from "./Components/Employees/EmployeesDashboard.jsx";
 import UserDashboard from "./Components/Users/UserDashboard.jsx";
 import RegisterProduct from "./components/Admin/RegisterProduct.jsx";
+import StockCount from "./components/Admin/StockCount.jsx";
 
 function Login() {
     const [username, setUsername] = useState('');
@@ -101,6 +102,14 @@ export default function App() {
                         }
                     />
                     <Route path="/admin/register-product" element={<RegisterProduct />} />
+                    <Route
+                        path="/admin/stock/stock-count" // <-- ¡Ruta nueva y única!
+                        element={
+                            <ProtectedRoute allowedRoles={['ADMIN', 'EMPLEADO']}>
+                                <StockCount />
+                            </ProtectedRoute>
+                        }
+                    />
 
                     <Route
                         path="/employees"

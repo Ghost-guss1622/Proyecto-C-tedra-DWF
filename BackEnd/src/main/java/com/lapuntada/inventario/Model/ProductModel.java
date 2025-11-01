@@ -1,5 +1,6 @@
 package com.lapuntada.inventario.Model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -12,15 +13,19 @@ public class ProductModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String name;
+
+    @Column(columnDefinition = "TEXT")
     private String description;
+
+    @Column(name = "category_id", nullable = false)
+    @JsonProperty("category_id")
     private Long category_id;
 
     private LocalDateTime created_at = LocalDateTime.now();
-
     private Boolean active = true;
 
-    // Getters y Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
